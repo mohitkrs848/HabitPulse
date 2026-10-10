@@ -6,7 +6,7 @@ import { useTheme } from 'react-native-paper';
 export default function Screen({ children, scroll = true }: PropsWithChildren<{ scroll?: boolean }>) {
   const theme = useTheme();
   return (
-    <SafeAreaView edges={['top', 'left', 'right']} style={[styles.safe, { backgroundColor: theme.colors.background }]}>
+    <SafeAreaView edges={['top', 'left', 'right', 'bottom']} style={[styles.safe, { backgroundColor: theme.colors.background }]}>
       {scroll ? <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">{children}</ScrollView> : <View style={styles.content}>{children}</View>}
     </SafeAreaView>
   );
