@@ -1,4 +1,5 @@
-import { Stack } from 'expo-router';
+import { router, Stack, useSegments } from 'expo-router';
+import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -7,9 +8,16 @@ import { HabitStoreProvider, useHabitStore } from '../hooks/useHabitStore';
 import { habitDarkTheme, habitLightTheme } from '../theme/paperTheme';
 
 function ThemedNavigation() {
-  const { data } = useHabitStore();
+  const { data, ready } = useHabitStore();
   const systemTheme = useColorScheme();
+  const segments = useSegments();
   const isDark = data.settings.theme === 'dark' || (data.settings.theme === 'system' && systemTheme === 'dark');
+
+  useEffect(() => {
+    if (ready && !data.settings.tourCompleted && segments[0] !== 'tour') {
+      router.replace('/tour');
+    }
+  }, [ready, data.settings.tourCompleted, segments]);
 
   return (
     <PaperProvider theme={isDark ? habitDarkTheme : habitLightTheme}>

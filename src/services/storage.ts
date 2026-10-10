@@ -35,7 +35,8 @@ const isDateKey = (value: unknown): value is string => {
   return toDateKey(fromDateKey(value)) === value;
 };
 
-const migrateLegacy = (value: unknown): HabitPulseData => {
+const 
+migrateLegacy = (value: unknown): HabitPulseData => {
   const empty = createEmptyData();
   if (!value || typeof value !== 'object') return empty;
   const legacy = value as { habits?: Record<string, unknown>[]; darkMode?: boolean };
@@ -63,7 +64,9 @@ const migrateLegacy = (value: unknown): HabitPulseData => {
         updatedAt: now,
       }];
     }),
-    settings: { theme: legacy.darkMode ? 'dark' : 'system', customCategories: [] },
+    settings: { theme: legacy.darkMode ? 'dark' : 'system', customCategories: [],
+      tourCompleted: true,
+     },
   };
 };
 
@@ -72,7 +75,12 @@ export const loadData = async (): Promise<HabitPulseData> => {
   if (stored) {
     const parsed = JSON.parse(stored) as HabitPulseData;
     if (parsed.schemaVersion === 2 && Array.isArray(parsed.habits) && parsed.settings) {
-      const normalized = { ...parsed, habits: parsed.habits.map((habit) => ({ ...habit, icon: normalizeIcon(habit.icon) })) };
+      const normalized = { ...parsed, habits: parsed.habits.map((habit) => ({ ...habit, icon: normalizeIcon(habit.icon) })),
+    settings:{
+      ...parsed.settings,
+      customCategories: parsed.settings.customCategories ?? [],
+      tourCompleted: parsed.settings.tourCompleted ?? parsed.habits.length > 0,
+    } };
       if (normalized.habits.some((habit, index) => habit.icon !== parsed.habits[index].icon)) await saveData(normalized);
       return normalized;
     }
@@ -118,6 +126,7 @@ export const validateImportedData = (value: unknown): HabitPulseData => {
       customCategories: Array.isArray(candidate.settings?.customCategories)
         ? candidate.settings.customCategories.filter((category): category is string => typeof category === 'string')
         : [],
+        tourCompleted : candidate.settings?.tourCompleted ?? true,
     },
   };
 };

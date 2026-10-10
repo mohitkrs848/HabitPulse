@@ -43,6 +43,19 @@ describe('HabitPulse mobile workflows', () => {
 
     expect(await screen.findByText('A clear little beginning.')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Create a habit' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Add habit' })).toBeNull();
+  });
+
+  it('offers add habit only once the list has habits', async () => {
+    await AsyncStorage.setItem('habitpulse.data.v2', JSON.stringify({
+      schemaVersion: 2,
+      settings: { theme: 'system', customCategories: [], tourCompleted: true },
+      habits: [{ id: 'water', name: 'Drink water', description: '', category: 'Health', color: '#63966B', icon: 'water', frequency: { type: 'daily' }, startDate: '2026-06-01', archived: false, favorite: false, completions: [], reminderTimes: [], createdAt: '2026-06-01T08:00:00.000Z', updatedAt: '2026-06-01T08:00:00.000Z' }],
+    }));
+    await render(<TodayScreen />, { wrapper: Wrapper });
+
+    expect(await screen.findByRole('button', { name: 'Add habit' })).toBeTruthy();
+    expect(screen.queryByText('A clear little beginning.')).toBeNull();
   });
 
   it('creates an offline habit from the editor and persists its fields', async () => {

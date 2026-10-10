@@ -32,6 +32,7 @@ export type Habit = {
 export type AppSettings = {
   theme: ThemePreference;
   customCategories: string[];
+  tourCompleted: boolean;
 };
 
 export type HabitPulseData = {
@@ -66,5 +67,5 @@ export const HABIT_ICONS = ['water', 'book-open-page-variant', 'dumbbell', 'medi
 export const createEmptyData = (): HabitPulseData => ({
   schemaVersion: 2,
   habits: [],
-  settings: { theme: 'system', customCategories: [] },
+  settings: { theme: 'system', customCategories: [], tourCompleted: false },
 });

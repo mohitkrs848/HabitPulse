@@ -64,7 +64,7 @@ export default function TodayScreen() {
         </Card>
       )}
 
-      <Button mode="outlined" icon="plus" onPress={() => router.push('/habit/edit')}>Add habit</Button>
+      {habits.length ? <Button mode="outlined" icon="plus" accessibilityLabel="Add habit" onPress={() => router.push('/habit/edit')}>Add habit</Button> : null}
     </Screen>
   );
 }

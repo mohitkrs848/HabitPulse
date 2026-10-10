@@ -69,6 +69,10 @@ export default function SettingsScreen() {
         <Button mode="text" icon="bell-outline" onPress={() => router.push('/habits')}>Manage habit reminders</Button>
       </Card.Content></Card>
       <Card mode="outlined"><Card.Content style={{ gap: 8 }}>
+  <View><Text variant="titleMedium" style={{ fontWeight: '700' }}>App tour</Text><Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>Replay the quick walkthrough of HabitPulse.</Text></View>
+  <Button mode="text" icon="compass-outline" onPress={() => router.push('/tour')}>Take the tour</Button>
+</Card.Content></Card>
+      <Card mode="outlined"><Card.Content style={{ gap: 8 }}>
         <Text variant="titleMedium" style={{ fontWeight: '700' }}>Privacy</Text><Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>No login. No ads. No analytics. No cloud dependency.</Text>
         <Button mode="text" icon="shield-lock-outline" onPress={() => router.push('/privacy')}>Read privacy information</Button>
       </Card.Content></Card>

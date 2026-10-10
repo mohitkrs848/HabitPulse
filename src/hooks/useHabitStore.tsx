@@ -21,6 +21,7 @@ const StoreContext = createContext<{
   setTheme: (theme: ThemePreference) => void;
   addCategory: (name: string) => void;
   replaceData: (value: unknown) => Promise<void>;
+  setTourCompleted: (done:boolean) => void;
 } | null>(null);
 
 export type HabitDraft = Omit<Habit, 'id' | 'completions' | 'createdAt' | 'updatedAt'>;
@@ -125,10 +126,12 @@ export function HabitStoreProvider({ children }: PropsWithChildren) {
     setData(imported);
   };
 
-  const value = { data, ready, error, createHabit, updateHabit, deleteHabit, duplicateHabit, setArchived, toggleFavorite, toggleCompletion, setCompletionNote, setTheme, addCategory, replaceData };
+  const setTourCompleted = (tourCompleted: boolean) => 
+    setData((current) => ({...current, settings: { ...current.settings, tourCompleted}}));
+
+  const value = { data, ready, error, createHabit, updateHabit, deleteHabit, duplicateHabit, setArchived, toggleFavorite, toggleCompletion, setCompletionNote, setTheme, addCategory, replaceData, setTourCompleted };
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }
-
 export const useHabitStore = () => {
   const value = useContext(StoreContext);
   if (!value) throw new Error('useHabitStore must be used inside HabitStoreProvider');
