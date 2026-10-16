@@ -8,7 +8,8 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.habitpulse.app"
     },
     "android": {
       "package": "com.habitpulse.app",
@@ -37,7 +38,8 @@
         }
       ],
       "expo-asset",
-      "expo-font"
+      "expo-font",
+      ["expo-splash-screen", { "image": "./assets/splash-icon.png", "imageWidth": 200, "resizeMode": "contain", "backgroundColor": "#E6F4FE" }]
     ]
   }
 }

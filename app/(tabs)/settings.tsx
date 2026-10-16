@@ -55,7 +55,7 @@ export default function SettingsScreen() {
       </Card.Content></Card>
       <Card mode="outlined"><Card.Content style={{ gap: 11 }}>
         <View><Text variant="titleMedium" style={{ fontWeight: '700' }}>Your categories</Text><Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>Add a category to the habit editor.</Text></View>
-        <View style={{ flexDirection: 'row', gap: 8 }}><TextInput mode="outlined" label="New category" value={category} onChangeText={setCategory} style={{ flex: 1 }} /><Button mode="contained-tonal" onPress={() => { addCategory(category); setCategory(''); }}>Add</Button></View>
+        <View style={{ flexDirection: 'row', gap: 8 }}><TextInput mode="outlined" label="New category" accessibilityLabel="New category" value={category} onChangeText={setCategory} style={{ flex: 1 }} /><Button mode="contained-tonal" onPress={() => { addCategory(category); setCategory(''); }}>Add</Button></View>
         <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>{data.settings.customCategories.length ? data.settings.customCategories.join(' · ') : 'Health · Fitness · Learning · Reading · Coding · Meditation · Finance · Productivity'}</Text>
       </Card.Content></Card>
       <Card mode="contained"><Card.Content style={{ gap: 8 }}>

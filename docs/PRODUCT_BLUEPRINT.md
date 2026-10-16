@@ -113,11 +113,46 @@ HabitPulseProviders
         └── PrivacyScreen
 ```
 
-## MVP Roadmap
+## Quality Assurance
 
-1. **MVP foundation (implemented):** local habit lifecycle, schedules, completion history and notes, streaks, theme, filtering, reminders, statistics, achievements, backup/restore, privacy screen, schema migration, Router and Material 3 UI.
-2. **Android beta hardening:** run through physical-device sizes and Android 13+ notification permissions; validate import/export through Android's document/share sheets; test backup recovery, timezone changes, DST, app upgrade migration, and accessibility; publish a hosted privacy-policy URL; configure signing and Play Console listing assets.
-3. **Play Store release:** internal testing track, closed testing, content rating, target API validation, Data safety answers consistent with the actual binary, release AAB, store screenshots, and staged rollout.
+| Layer | Tool | Command | Coverage target |
+|-------|------|---------|-----------------|
+| Static types | TypeScript | `npm run typecheck` | strict mode |
+| Lint | Expo ESLint | `npm run lint` | zero errors |
+| Unit tests | Jest + jest-expo | `npm test` / `npm run test:ci` | 80% statements |
+| Native config | expo-doctor | `npm run doctor` | clean |
+
+- `__tests__/store.test.tsx` — habit store CRUD, persistence, reminders, backup replace.
+- `__tests__/habit-rules.test.ts` — date arithmetic, frequency eligibility, streaks, selectors.
+- `__tests__/backup.test.ts` — JSON and CSV export shape and sharing.
+- `__tests__/screens.test.tsx` — insights, settings, tour screens.
+- `__tests__/habit-detail.test.tsx` — completion, notes, archive, delete.
+- `__tests__/app-workflows.test.tsx` — end-to-end flows including categories and filters.
+- `__tests__/time-wheel-picker.test.tsx` — reminder time picker behavior.
+- `__tests__/daily-quotes.test.ts` — deterministic quote-of-day logic.
+
+CI runs on every push/PR (`.github/workflows/ci.yml`): lint → typecheck → test with coverage → expo-doctor. Codecov uploads coverage; token stored as `CODECOV_TOKEN` secret.
+
+## Release Checklist
+
+Before any production build:
+
+1. `npm run typecheck` exits 0.
+2. `npm run lint` exits 0.
+3. `npm run test:ci` passes all suites.
+4. `npx expo-doctor` reports no dependency or config issues.
+5. Bump `version` and `versionCode`/`buildNumber` in `app.json`.
+6. Build with EAS: `eas build --platform android --profile production` (produces AAB).
+7. Submit: `eas submit --platform android`.
+8. Update Play Console listing, content rating, and data-safety form to match this app (private-by-design, no analytics, local-only data).
+9. Publish release notes summarizing user-facing changes.
+
+## Production Build Notes
+
+- Android: continuous native generation via EAS; `ios/` and `android/` are **not** committed. Configure native behavior only through `app.json` and config plugins.
+- iOS bundle identifier and app display name are set in `app.json`; adjust `ios.bundleIdentifier` before first iOS build if needed.
+- Expo Go only bundles core native modules. Local reminders require a development build (`eas build --platform android --profile development` or `npx expo run:android`) because `expo-notifications` is not in Expo Go.
+- Signing is handled by EAS; do not commit keystore files (`.jks`, `.p12`, `.key`, `.mobileprovision` are gitignored).
 
 ## Future Roadmap
 
