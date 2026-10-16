@@ -4,6 +4,7 @@
     "slug": "HabitPulse",
     "scheme": "habitpulse",
     "version": "1.0.0",
+    "privacyPolicyUrl": "https://habitpulse.app/privacy",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",

@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useContext, useEffect, useState, type PropsWithChildren } from 'react';
+import { preventAutoHideAsync, hideAsync } from 'expo-splash-screen';
 import { toDateKey } from '../domain/dates';
 import type { Habit, HabitPulseData, ThemePreference } from '../domain/models';
 import { createEmptyData } from '../domain/models';
@@ -10,6 +11,7 @@ const StoreContext = createContext<{
   data: HabitPulseData;
   ready: boolean;
   error: string | null;
+  saving: boolean;
   createHabit: (values: HabitDraft) => Promise<void>;
   updateHabit: (id: string, values: HabitDraft) => Promise<void>;
   deleteHabit: (id: string) => Promise<void>;
@@ -32,19 +34,43 @@ export function HabitStoreProvider({ children }: PropsWithChildren) {
   const [data, setData] = useState<HabitPulseData>(createEmptyData);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    void loadData().then((loaded) => {
-      setData(loaded);
-      setReady(true);
-    }).catch(() => {
-      setError('Local data could not be read. The app will start with an empty library.');
-      setReady(true);
-    });
+    let cancelled = false;
+    preventAutoHideAsync()
+      .then(async () => {
+        try {
+          const loaded = await loadData();
+          if (!cancelled) {
+            setData(loaded);
+            setReady(true);
+            await hideAsync();
+          }
+        } catch {
+          if (!cancelled) {
+            setError('Local data could not be read. The app will start with an empty library.');
+            setReady(true);
+            await hideAsync();
+          }
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
-    if (ready) void saveData(data).catch(() => setError('Changes could not be saved on this device.'));
+    if (!ready) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSaving(true);
+    void saveData(data)
+      .catch(() => {
+        setError('Changes could not be saved on this device.');
+      })
+      .finally(() => {
+        setSaving(false);
+      });
   }, [data, ready]);
 
   const writeHabit = async (habit: Habit) => {
@@ -129,7 +155,7 @@ export function HabitStoreProvider({ children }: PropsWithChildren) {
   const setTourCompleted = (tourCompleted: boolean) => 
     setData((current) => ({...current, settings: { ...current.settings, tourCompleted}}));
 
-  const value = { data, ready, error, createHabit, updateHabit, deleteHabit, duplicateHabit, setArchived, toggleFavorite, toggleCompletion, setCompletionNote, setTheme, addCategory, replaceData, setTourCompleted };
+  const value = { data, ready, error, saving, createHabit, updateHabit, deleteHabit, duplicateHabit, setArchived, toggleFavorite, toggleCompletion, setCompletionNote, setTheme, addCategory, replaceData, setTourCompleted };
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }
 export const useHabitStore = () => {

@@ -27,7 +27,7 @@ export default function HabitDetailScreen() {
   return (
     <Screen>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <IconButton icon={habit.icon as never} mode="contained" containerColor={`${habit.color}28`} iconColor={habit.color} size={30} />
+        <IconButton icon={habit.icon as never} mode="contained" containerColor={`${habit.color}28`} iconColor={habit.color} size={30} accessibilityLabel={`${habit.name} icon`} />
         <View style={{ flex: 1 }}><Text variant="headlineSmall" style={{ fontWeight: '800' }}>{habit.name}</Text><Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>{habit.category} · {habit.frequency.type}</Text></View>
         <IconButton icon={habit.favorite ? 'star' : 'star-outline'} iconColor={habit.favorite ? '#C28E25' : undefined} onPress={() => toggleFavorite(habit.id)} accessibilityLabel="Toggle favorite" />
       </View>

@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Platform, View } from 'react-native';
 import { Button, Card, SegmentedButtons, Text, TextInput, useTheme } from 'react-native-paper';
 import { File } from 'expo-file-system';
@@ -9,9 +9,41 @@ import { useHabitStore } from '../../src/hooks/useHabitStore';
 
 export default function SettingsScreen() {
   const theme = useTheme();
-  const { data, setTheme, addCategory, replaceData, error } = useHabitStore();
+  const { data, setTheme, addCategory, replaceData, error, saving } = useHabitStore();
   const [category, setCategory] = useState('');
   const [busy, setBusy] = useState(false);
+  const [notificationStatus, setNotificationStatus] = useState<'granted' | 'denied' | 'undetermined' | 'unknown'>('unknown');
+
+  const getNotifications = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const notifications = require('expo-notifications') as typeof import('expo-notifications');
+    return notifications;
+  };
+
+  const checkNotificationPermissions = async () => {
+    try {
+      const Notifications = await getNotifications();
+      const status = await Notifications.getPermissionsAsync();
+      setNotificationStatus(status.granted ? 'granted' : status.status === 'denied' ? 'denied' : 'undetermined');
+    } catch {
+      setNotificationStatus('unknown');
+    }
+  };
+
+  const requestNotificationPermissions = async () => {
+    try {
+      const Notifications = await getNotifications();
+      const status = await Notifications.requestPermissionsAsync();
+      setNotificationStatus(status.granted ? 'granted' : 'denied');
+    } catch {
+      setNotificationStatus('unknown');
+    }
+  };
+
+  useEffect(() => {
+    setTimeout(() => checkNotificationPermissions(), 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const runExport = async (format: 'json' | 'csv') => {
     setBusy(true);
@@ -49,6 +81,7 @@ export default function SettingsScreen() {
     <Screen>
       <View style={{ gap: 4 }}><Text variant="headlineMedium" style={{ fontWeight: '800' }}>Settings</Text><Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>Your preferences stay on this device.</Text></View>
       {error && <Card mode="contained"><Card.Content><Text>{error}</Text></Card.Content></Card>}
+      {saving && <Card mode="outlined"><Card.Content style={{ gap: 8 }}><Text variant="bodyMedium">Saving…</Text></Card.Content></Card>}
       <Card mode="contained"><Card.Content style={{ gap: 14 }}>
         <View><Text variant="titleMedium" style={{ fontWeight: '700' }}>Appearance</Text><Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>Choose a palette or follow Android.</Text></View>
         <SegmentedButtons value={data.settings.theme} onValueChange={(value) => setTheme(value as 'system' | 'light' | 'dark')} buttons={[{ value: 'system', label: 'System', icon: 'theme-light-dark' }, { value: 'light', label: 'Light', icon: 'white-balance-sunny' }, { value: 'dark', label: 'Dark', icon: 'moon-waning-crescent' }]} />
@@ -67,6 +100,13 @@ export default function SettingsScreen() {
       <Card mode="outlined"><Card.Content style={{ gap: 8 }}>
         <View><Text variant="titleMedium" style={{ fontWeight: '700' }}>Reminders</Text><Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>Set one or more local reminder times inside each habit.</Text></View>
         <Button mode="text" icon="bell-outline" onPress={() => router.push('/habits')}>Manage habit reminders</Button>
+      </Card.Content></Card>
+      <Card mode="outlined"><Card.Content style={{ gap: 8 }}>
+        <View>
+          <Text variant="titleMedium" style={{ fontWeight: '700' }}>Notification permissions</Text>
+          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>{notificationStatus === 'granted' ? 'Notifications are enabled.' : notificationStatus === 'denied' ? 'Notifications are disabled. Enable them in system settings.' : notificationStatus === 'undetermined' ? 'Permission not yet requested.' : 'Unable to check permissions.'}</Text>
+        </View>
+        <Button mode="text" icon={notificationStatus === 'granted' ? 'bell-check-outline' : 'bell-off-outline'} onPress={requestNotificationPermissions}>{notificationStatus === 'granted' ? 'Notifications enabled' : 'Enable notifications'}</Button>
       </Card.Content></Card>
       <Card mode="outlined"><Card.Content style={{ gap: 8 }}>
   <View><Text variant="titleMedium" style={{ fontWeight: '700' }}>App tour</Text><Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>Replay the quick walkthrough of HabitPulse.</Text></View>
