@@ -24,6 +24,7 @@ const isFrequency = (value: unknown): value is Habit['frequency'] => {
   if (!value || typeof value !== 'object' || !('type' in value)) return false;
   const frequency = value as Record<string, unknown>;
   if (frequency.type === 'daily') return true;
+  if (frequency.type === 'hourly') return Number.isInteger(frequency.everyHours) && Number(frequency.everyHours) >= 1 && Number(frequency.everyHours) <= 24;
   if (frequency.type === 'weekly') return Number.isInteger(frequency.target) && Number(frequency.target) >= 1 && Number(frequency.target) <= 7;
   if (frequency.type === 'weekdays') return Array.isArray(frequency.days) && frequency.days.length > 0 && frequency.days.every((day) => Number.isInteger(day) && Number(day) >= 0 && Number(day) <= 6);
   if (frequency.type === 'interval') return Number.isInteger(frequency.everyDays) && Number(frequency.everyDays) >= 2 && Number(frequency.everyDays) <= 365;

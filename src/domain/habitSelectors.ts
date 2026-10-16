@@ -8,7 +8,7 @@ export const selectHabits = (
   today: string,
 ): Habit[] => habits
   .filter((habit) => {
-    const matchesQuery = `${habit.name} ${habit.category}`.toLowerCase().includes(query.trim().toLowerCase());
+    const matchesQuery = `${habit.name} ${habit.category} ${habit.description}`.toLowerCase().includes(query.trim().toLowerCase());
     const matchesFilter = filter === 'archived'
       ? habit.archived
       : filter === 'favorites'

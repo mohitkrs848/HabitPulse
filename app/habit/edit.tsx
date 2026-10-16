@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Chip, IconButton, SegmentedButtons, Switch, Text, TextInput, useTheme } from 'react-native-paper';
 import Screen from '../../src/components/Screen';
+import TimeWheelPicker from '../../src/components/TimeWheelPicker';
 import { toDateKey } from '../../src/domain/dates';
 import { DEFAULT_CATEGORIES, HABIT_COLORS, HABIT_ICONS, type Habit, type HabitFrequency } from '../../src/domain/models';
 import { useHabitStore, type HabitDraft } from '../../src/hooks/useHabitStore';
@@ -29,6 +30,7 @@ function HabitEditor({ existing }: { existing?: Habit }) {
   const [frequencyType, setFrequencyType] = useState<HabitFrequency['type']>(existing?.frequency.type ?? 'daily');
   const [target, setTarget] = useState(existing?.frequency.type === 'weekly' ? String(existing.frequency.target) : '3');
   const [interval, setInterval] = useState(existing?.frequency.type === 'interval' ? String(existing.frequency.everyDays) : '2');
+  const [everyHours, setEveryHours] = useState(existing?.frequency.type === 'hourly' ? String(existing.frequency.everyHours) : '2');
   const [weekdays, setWeekdays] = useState<number[]>(existing?.frequency.type === 'weekdays' ? existing.frequency.days : [1, 3, 5]);
   const [startDate, setStartDate] = useState(existing?.startDate ?? toDateKey(new Date()));
   const [reminderInput, setReminderInput] = useState('09:00');
@@ -37,10 +39,6 @@ function HabitEditor({ existing }: { existing?: Habit }) {
 
   const categories = [...DEFAULT_CATEGORIES, ...data.settings.customCategories];
   const addReminder = () => {
-    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(reminderInput)) {
-      Alert.alert('Use 24-hour time', 'Enter a reminder like 08:30 or 19:15.');
-      return;
-    }
     setReminderTimes((current) => [...new Set([...current, reminderInput])].sort());
   };
 
@@ -48,6 +46,7 @@ function HabitEditor({ existing }: { existing?: Habit }) {
     if (frequencyType === 'weekly') return { type: 'weekly', target: Math.max(1, Math.min(7, Number(target) || 1)) };
     if (frequencyType === 'weekdays') return { type: 'weekdays', days: weekdays.length ? weekdays : [new Date().getDay()] };
     if (frequencyType === 'interval') return { type: 'interval', everyDays: Math.max(2, Math.min(365, Number(interval) || 2)) };
+    if (frequencyType === 'hourly') return { type: 'hourly', everyHours: Math.max(1, Math.min(24, Number(everyHours) || 1)) };
     return { type: 'daily' };
   };
 
@@ -76,9 +75,11 @@ function HabitEditor({ existing }: { existing?: Habit }) {
         {categories.map((item) => <Chip key={item} selected={category === item} onPress={() => setCategory(item)}>{item}</Chip>)}
       </ScrollView>
       <Text variant="titleSmall" style={styles.label}>FREQUENCY</Text>
-      <SegmentedButtons value={frequencyType} onValueChange={(value) => setFrequencyType(value as typeof frequencyType)} buttons={[{ value: 'daily', label: 'Daily' }, { value: 'weekly', label: 'Weekly' }, { value: 'weekdays', label: 'Days' }, { value: 'interval', label: 'Interval' }]} />
-      {frequencyType === 'weekly' && <TextInput label="Times per week" keyboardType="number-pad" value={target} onChangeText={setTarget} mode="outlined" />}
-      {frequencyType === 'interval' && <TextInput label="Repeat every how many days?" keyboardType="number-pad" value={interval} onChangeText={setInterval} mode="outlined" />}
+      <SegmentedButtons value={frequencyType} onValueChange={(value) => setFrequencyType(value as typeof frequencyType)} buttons={[{ value: 'daily', label: 'Daily' }, { value: 'hourly', label: 'Hourly' }, { value: 'weekly', label: 'Weekly' }, { value: 'weekdays', label: 'Days' }, { value: 'interval', label: 'Interval' }]} />
+      {frequencyType === 'weekly' && <TextInput label="Times per week" accessibilityLabel="Times per week" keyboardType="number-pad" value={target} onChangeText={setTarget} mode="outlined" />}
+      {frequencyType === 'interval' && <TextInput label="Repeat every how many days?" accessibilityLabel="Repeat every how many days" keyboardType="number-pad" value={interval} onChangeText={setInterval} mode="outlined" />}
+      {frequencyType === 'hourly' && <View style={styles.weekdays}>{['2', '3', '4', '6', '8'].map((value) => <Chip key={value} selected={everyHours === value} showSelectedCheck={false} onPress={() => setEveryHours(value)}>Every {value}h</Chip>)}</View>}
+      {frequencyType === 'hourly' && <TextInput label="Or repeat every how many hours?" accessibilityLabel="Repeat every how many hours" keyboardType="number-pad" value={everyHours} onChangeText={setEveryHours} mode="outlined" />}
       {frequencyType === 'weekdays' && <View style={styles.weekdays}>{WEEKDAYS.map((day, index) => <Chip key={day} selected={weekdays.includes(index)} onPress={() => setWeekdays((current) => current.includes(index) ? current.filter((value) => value !== index) : [...current, index])}>{day}</Chip>)}</View>}
       <TextInput label="Start date" accessibilityLabel="Start date" value={startDate} onChangeText={setStartDate} mode="outlined" autoCapitalize="none" />
       <Text variant="titleSmall" style={styles.label}>COLOR</Text>
@@ -87,7 +88,7 @@ function HabitEditor({ existing }: { existing?: Habit }) {
       <View style={styles.icons}>{HABIT_ICONS.map((item) => <Chip key={item} selected={icon === item} icon={item} onPress={() => setIcon(item)}>{item.replaceAll('-', ' ')}</Chip>)}</View>
       <View style={styles.favorite}><View><Text variant="titleSmall">Favorite habit</Text><Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>Keep it near the top of your list.</Text></View><Switch value={favorite} onValueChange={setFavorite} accessibilityLabel="Favorite habit" /></View>
       <Text variant="titleSmall" style={styles.label}>LOCAL REMINDERS</Text>
-      <View style={styles.reminderAdd}><TextInput label="Time (24-hour)" accessibilityLabel="Reminder time" value={reminderInput} onChangeText={setReminderInput} mode="outlined" style={{ flex: 1 }} placeholder="09:00"/><Button mode="outlined" onPress={addReminder}>Add time</Button></View>
+      <View style={styles.reminderAdd}><TimeWheelPicker value={reminderInput} onChange={setReminderInput} /><Button mode="outlined" onPress={addReminder}>Add {reminderInput}</Button></View>
       <View style={styles.reminders}>{reminderTimes.map((time) => <Chip key={time} onClose={() => setReminderTimes((current) => current.filter((value) => value !== time))} icon="bell-outline">{time}</Chip>)}</View>
       <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>Reminders are scheduled on this device. Android may ask permission the first time.</Text>
       <Button mode="contained" icon="check" accessibilityLabel={existing ? 'Save habit changes' : 'Create habit'} onPress={() => void save()} style={{ marginTop: 4 }}>{existing ? 'Save changes' : 'Create habit'}</Button>

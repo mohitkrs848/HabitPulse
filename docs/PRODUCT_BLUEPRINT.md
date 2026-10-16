@@ -45,7 +45,7 @@ __tests__/
 ## State And Persistence
 
 - `Habit` stores an id, name, description, category, color, Material Community icon key, frequency, local start date, archived/favorite state, completion records, daily notes keyed by local `YYYY-MM-DD`, reminder times, and timestamps.
-- `HabitFrequency` is a discriminated union: `daily`, `weekly` with a target count, `weekdays` with JavaScript weekday values (Sunday is `0`), and `interval` with an every-N-days interval.
+- `HabitFrequency` is a discriminated union: `daily`, `hourly` with an every-N-hours interval, `weekly` with a target count, `weekdays` with JavaScript weekday values (Sunday is `0`), and `interval` with an every-N-days interval.
 - Completion records are date-keyed. The store toggles a single record per local day, and notes are kept separately so writing a note cannot create a completion or change a streak.
 - App settings store theme preference (`system`, `light`, `dark`) and user-created categories.
 - AsyncStorage persists one versioned `habitpulse.data.v2` document. The old `habitpulse.v1` prototype data is migrated on first load. JSON import is validated before replacing local state.
@@ -59,7 +59,7 @@ Expo Router owns navigation. The four bottom tabs are Today, Habits, Insights, a
 
 - **Today:** dated greeting, circular completion ring, best active streak, a short active habit list, and a first-run empty state.
 - **Habits:** local search across names/categories; active, archived, completed today, missed today, and favorite filters; completion, favorite, edit, archive/restore, duplicate, delete.
-- **Habit editor:** name, description, category, color, icon, start date, daily/weekly/weekdays/interval frequency, favorites, and multiple local reminder times.
+- **Habit editor:** name, description, category, color, icon, start date, daily/hourly/weekly/weekdays/interval frequency, favorites, and multiple local reminder times picked from a 24-hour scroll wheel.
 - **Habit detail:** current and longest streak, success rate, total completions, completion toggle, per-day note, 35-day heatmap, recent history, and management actions.
 - **Insights:** daily/weekly/monthly performance, seven-day line and bar charts, 35-day calendar heatmap, habit success rates, and badge progress.
 - **Settings:** theme, custom categories, JSON export/import, CSV completion export, reminder guidance, and privacy route.

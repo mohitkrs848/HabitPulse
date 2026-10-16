@@ -10,6 +10,7 @@ export const isDueOn = (habit: Habit, date: string): boolean => {
 
   switch (habit.frequency.type) {
     case 'daily':
+    case 'hourly':
     case 'weekly':
       return true;
     case 'weekdays':

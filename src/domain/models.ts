@@ -2,6 +2,7 @@ export type ThemePreference = 'system' | 'light' | 'dark';
 
 export type HabitFrequency =
   | { type: 'daily' }
+  | { type: 'hourly'; everyHours: number }
   | { type: 'weekly'; target: number }
   | { type: 'weekdays'; days: number[] }
   | { type: 'interval'; everyDays: number };

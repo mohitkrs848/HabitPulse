@@ -4,6 +4,9 @@ import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import HabitEditScreen from '../app/habit/edit';
 import TodayScreen from '../app/(tabs)/today';
+import HabitsScreen from '../app/(tabs)/habits';
+import { toDateKey } from '../src/domain/dates';
+import { quoteOfDay } from '../src/domain/quotes';
 import { HabitStoreProvider, useHabitStore, type HabitDraft } from '../src/hooks/useHabitStore';
 import { loadData, validateImportedData } from '../src/services/storage';
 import { syncHabitReminders } from '../src/services/reminders';
@@ -44,6 +47,35 @@ describe('HabitPulse mobile workflows', () => {
     expect(await screen.findByText('A clear little beginning.')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Create a habit' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Add habit' })).toBeNull();
+  });
+
+  it('greets with the quote of the day', async () => {
+    await render(<TodayScreen />, { wrapper: Wrapper });
+
+    expect(await screen.findByText(quoteOfDay(toDateKey(new Date())))).toBeTruthy();
+  });
+
+  it('shows per-filter and per-category counts in the habit library', async () => {
+    await AsyncStorage.setItem('habitpulse.data.v2', JSON.stringify({
+      schemaVersion: 2,
+      settings: { theme: 'system', customCategories: [], tourCompleted: true },
+      habits: [
+        { id: 'water', name: 'Drink water', description: '', category: 'Health', color: '#63966B', icon: 'water', frequency: { type: 'daily' }, startDate: '2026-06-01', archived: false, favorite: false, completions: [], reminderTimes: [], createdAt: '2026-06-01T08:00:00.000Z', updatedAt: '2026-06-01T08:00:00.000Z' },
+        { id: 'old-run', name: 'Old run', description: '', category: 'Fitness', color: '#E08E55', icon: 'walk', frequency: { type: 'daily' }, startDate: '2026-06-01', archived: true, favorite: false, completions: [], reminderTimes: [], createdAt: '2026-06-01T08:00:00.000Z', updatedAt: '2026-06-01T08:00:00.000Z' },
+      ],
+    }));
+    await render(<HabitsScreen />, { wrapper: Wrapper });
+
+    expect(await screen.findByText('Active (1)')).toBeTruthy();
+    expect(screen.getByText('Archived (1)')).toBeTruthy();
+    expect(screen.getByText('Starred (0)')).toBeTruthy();
+
+    // Paper's Menu starts a mount-time hide animation whose completion callback
+    // (~200ms) unmounts a portal opened within that window; let it settle first.
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    await fireEvent.press(screen.getByText('All categories'));
+    expect(await screen.findByText('Health (1)', { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.getByText('Fitness (0)', { includeHiddenElements: true })).toBeTruthy();
   });
 
   it('offers add habit only once the list has habits', async () => {
@@ -129,6 +161,26 @@ describe('HabitPulse mobile workflows', () => {
     });
     expect(backup.habits[0].completions).toHaveLength(1);
     expect(() => validateImportedData({ habits: [{ id: 'bad', name: 'Bad', frequency: { type: 'weekly', target: 99 }, completions: [] }] })).toThrow('unsupported habit records');
+  });
+
+  it('accepts hourly frequencies in backups and rejects invalid hour counts', () => {
+    const record = { id: 'water', name: 'Drink water', description: '', category: 'Health', color: '#63966B', icon: 'water', startDate: '2026-06-01', archived: false, favorite: false, completions: [], reminderTimes: [], createdAt: '2026-06-01T08:00:00.000Z', updatedAt: '2026-06-01T08:00:00.000Z' };
+    expect(validateImportedData({ habits: [{ ...record, frequency: { type: 'hourly', everyHours: 3 } }] }).habits[0].frequency).toEqual({ type: 'hourly', everyHours: 3 });
+    expect(() => validateImportedData({ habits: [{ ...record, frequency: { type: 'hourly', everyHours: 0 } }] })).toThrow('unsupported habit records');
+    expect(() => validateImportedData({ habits: [{ ...record, frequency: { type: 'hourly', everyHours: 25 } }] })).toThrow('unsupported habit records');
+  });
+
+  it('creates an hourly habit from the editor', async () => {
+    await render(<HabitEditScreen />, { wrapper: Wrapper });
+    await fireEvent.changeText(screen.getByLabelText('Habit name'), 'Drink water');
+    await fireEvent.press(screen.getByText('Hourly'));
+    await fireEvent.changeText(screen.getByLabelText('Repeat every how many hours'), '3');
+    await fireEvent.press(screen.getByRole('button', { name: 'Create habit' }));
+
+    await waitFor(async () => {
+      const stored = JSON.parse((await AsyncStorage.getItem('habitpulse.data.v2')) ?? '{}');
+      expect(stored.habits[0].frequency).toEqual({ type: 'hourly', everyHours: 3 });
+    });
   });
 
   it('repairs old emoji icons already present in v2 storage', async () => {

@@ -23,7 +23,9 @@ export default function HabitCard({ habit, showActions = true }: { habit: Habit;
       ? `${habit.frequency.target}× this week`
       : habit.frequency.type === 'interval'
         ? `Every ${habit.frequency.everyDays} days`
-        : habit.frequency.days.map((day) => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][day]).join(' · ');
+        : habit.frequency.type === 'hourly'
+          ? `Every ${habit.frequency.everyHours} ${habit.frequency.everyHours === 1 ? 'hour' : 'hours'}`
+          : habit.frequency.days.map((day) => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][day]).join(' · ');
 
   return (
     <Card mode="contained" style={[styles.card, { backgroundColor: theme.colors.surface }]}>
@@ -54,7 +56,10 @@ export default function HabitCard({ habit, showActions = true }: { habit: Habit;
       {showActions && <View style={styles.quickActions}>
         <Pressable accessibilityRole="button" accessibilityLabel={`Edit ${habit.name}`} onPress={() => router.push({ pathname: '/habit/edit', params: { id: habit.id } })}><Text variant="labelSmall" style={{ color: theme.colors.primary }}>Edit</Text></Pressable>
         <Text style={{ color: theme.colors.outlineVariant }}>·</Text>
-        <Pressable accessibilityRole="button" accessibilityLabel={`${habit.archived ? 'Restore' : 'Archive'} ${habit.name}`} onPress={() => void setArchived(habit.id, !habit.archived)}><Text variant="labelSmall" style={{ color: theme.colors.primary }}>{habit.archived ? 'Restore' : 'Archive'}</Text></Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel={`${habit.archived ? 'Restore' : 'Archive'} ${habit.name}`} onPress={() => {
+          void setArchived(habit.id, !habit.archived);
+          if (!habit.archived) Alert.alert('Moved to Archived', `Find ${habit.name} under the Archived filter in your Habit library. Nothing is deleted.`);
+        }}><Text variant="labelSmall" style={{ color: theme.colors.primary }}>{habit.archived ? 'Restore' : 'Archive'}</Text></Pressable>
         <Text style={{ color: theme.colors.outlineVariant }}>·</Text>
         <Pressable accessibilityRole="button" accessibilityLabel={`Duplicate ${habit.name}`} onPress={() => duplicateHabit(habit.id)}><Text variant="labelSmall" style={{ color: theme.colors.primary }}>Duplicate</Text></Pressable>
         <Text style={{ color: theme.colors.outlineVariant }}>·</Text>

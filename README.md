@@ -7,7 +7,7 @@ An Android-first, privacy-focused habit tracker built with Expo SDK 57, Expo Rou
 - Create, edit, duplicate, archive, restore, and delete habits.
 - Daily, weekly target, weekday, and every-N-days schedules.
 - Local-day completion, undo, streaks, completion history, and daily notes.
-- Favorites, name/category search, and active/archived/completed/missed filters.
+- Favorites, name/category/description search, category and active/archived/completed/missed filters.
 - Multiple local reminder times per habit.
 - Daily/weekly/monthly insight cards, line and bar charts, calendar heatmap, per-habit success rates, and achievement progress.
 - JSON backup and restore, CSV completion export, and local categories.

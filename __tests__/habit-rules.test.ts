@@ -65,6 +65,25 @@ describe('local calendar date rules', () => {
     expect(isMissedOn(weekly, '2026-06-07')).toBe(true);
   });
 
+  it('treats hourly habits as due every day from the start date', () => {
+    const hourly = habit({ frequency: { type: 'hourly', everyHours: 2 } });
+    expect(isDueOn(hourly, '2026-05-31')).toBe(false);
+    expect(isDueOn(hourly, '2026-06-01')).toBe(true);
+    expect(isDueOn(hourly, '2026-06-05')).toBe(true);
+    const tracked = habit({ frequency: { type: 'hourly', everyHours: 3 }, completions: completedDays('2026-06-01', 2) });
+    expect(getHabitStats(tracked, '2026-06-02')).toMatchObject({ currentStreak: 2, completionPercent: 100 });
+  });
+
+  it('searches habit names, categories, and descriptions', () => {
+    const habits = [
+      habit({ id: 'read', name: 'Read', category: 'Learning', description: 'Two pages before screens' }),
+      habit({ id: 'walk', name: 'Walk', category: 'Fitness', description: 'Around the block' }),
+    ];
+    expect(selectHabits(habits, 'active', 'learning', '2026-06-01').map((item) => item.id)).toEqual(['read']);
+    expect(selectHabits(habits, 'active', 'pages', '2026-06-01').map((item) => item.id)).toEqual(['read']);
+    expect(selectHabits(habits, 'active', 'walk', '2026-06-01').map((item) => item.id)).toEqual(['walk']);
+  });
+
   it('filters habits by query, archive state, due completion and favorites', () => {
     const habits = [
       habit({ id: 'walk', name: 'Take a walk', favorite: true, completions: [{ date: '2026-06-05' }] }),

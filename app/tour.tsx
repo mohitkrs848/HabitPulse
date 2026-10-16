@@ -10,7 +10,7 @@ type Step = { icon: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
 
 const STEPS: Step[] = [
   { icon: 'shield-lock-outline', title: 'Welcome to HabitPulse', body: 'Your habits stay on this device. No account, no ads, no tracking.' },
-  { icon: 'plus-circle-outline', title: 'Add your first habit', body: 'Open the Habits tab and tap + to create a habit. Pick a schedule: daily, weekly target, specific weekdays, or every N days.' },
+  { icon: 'plus-circle-outline', title: 'Add your first habit', body: 'Open the Habits tab and tap + to create a habit. Pick a schedule: daily, hourly, weekly target, specific weekdays, or every N days.' },
   { icon: 'check-circle-outline', title: 'Check in each day', body: 'Use the Today tab to mark habits done with one tap. Tap again to undo, and add a note if you like.' },
   { icon: 'bell-outline', title: 'Set reminders', body: 'Add one or more reminder times inside any habit. Reminders need a development build, not Expo Go.' },
   { icon: 'chart-line', title: 'Watch your progress', body: 'Insights shows streaks, charts, and a calendar heatmap. Back up your data anytime from Settings.' },

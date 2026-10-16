@@ -7,6 +7,7 @@ import { getHabitStats, isCompleteOn } from '../../src/domain/habitRules';
 import HabitCard from '../../src/components/HabitCard';
 import ProgressRing from '../../src/components/ProgressRing';
 import Screen from '../../src/components/Screen';
+import { quoteOfDay } from '../../src/domain/quotes';
 import { useHabitStore } from '../../src/hooks/useHabitStore';
 
 const messages = ['Small steps become a life you love.', 'A little consistency goes a long way.', 'Make today count, one ritual at a time.', 'You showed up. That matters.'];
@@ -27,7 +28,7 @@ export default function TodayScreen() {
       <View style={styles.header}>
         <View>
           <Text variant="labelMedium" style={{ color: theme.colors.primary, fontWeight: '800', letterSpacing: 1 }}>{dateText.toUpperCase()}</Text>
-          <Text variant="headlineMedium" style={styles.heading}>Today, gently.</Text>
+          <Text variant="headlineMedium" style={styles.heading}>{quoteOfDay(today)}</Text>
         </View>
         <IconButton icon="cog-outline" size={23} accessibilityLabel="Open settings" onPress={() => router.push('/settings')} />
       </View>
